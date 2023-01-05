@@ -39,19 +39,31 @@ export class UserController {
         });
     }
 
-    // @Post('')
-    // @ApiOperation({ summary: 'Verifies signature with public key calculated from the users address.' })
-    // @ApiResponse({ status: 200, description: 'JWT Token', type: AuthResponse })
-    // async update(@Body() login: LoginDto): Promise<AuthResponse> {
-    //     return await this.authService.signIn(login.address, login.signature);
-    // }
-
-    @UseGuards(JwtAuthGuard)
     @Get('')
-    @ApiOperation({ summary: 'Returns user details.' })
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Returns own user details.' })
     @ApiResponse({ status: 200, description: 'User details', type: UpdateUserDto })
-    async getUserInfo(@Request() req) {
+    async getUserInfo(@Request() req): Promise<UpdateUserDto> {
         const user = await this.userService.findByAddress(req.user.address);
         return user;
+    }
+
+    @Post('')
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Updates own user data' })
+    @ApiResponse({ status: 200, description: 'User details', type: UpdateUserDto })
+    async updateUserInfo(@Request() req, @Body() data: UpdateUserDto): Promise<UpdateUserDto> {
+        return this.userService.update({
+            where: {
+                address: req.user.address,
+            },
+            data: {
+                email: data.email,
+                name: data.name,
+                role: data.role,
+                lockEnabled: data.lockEnabled,
+                modifiedAt: new Date(),
+            }
+        })
     }
 }

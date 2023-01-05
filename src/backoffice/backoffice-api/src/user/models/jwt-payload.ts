@@ -1,4 +1,4 @@
 export interface JwtPayload {
-    walletAddress: string;
-    name: string;
+  walletAddress: string;
+  name: string;
 }

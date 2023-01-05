@@ -13,7 +13,7 @@ import { AdminModule } from './admin/admin.module';
       envFilePath: './env/debug.env',
     }),
     UserModule,
-    AdminModule
+    AdminModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

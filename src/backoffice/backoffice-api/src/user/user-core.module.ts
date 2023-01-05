@@ -13,42 +13,31 @@ import { JwtStrategy } from './strategies/jwt-strategy';
 
 @Module({})
 export class UserCoreModule {
-    static fooRootAsync(): DynamicModule {
-        return {
-            imports: [
-                DoctiveCoreModule,
-                DbAccessModule,
-                HttpModule,
-                PassportModule.register({
-                    defaultStrategy: 'jwt',
-                    property: 'user',
-                    session: false,
-                }),
-                JwtModule.registerAsync({
-                    useFactory: (cfgService: ConfigService) => {
-                        const cfg = cfgService.get<JwtConfig>('jwt');
-                        return {
-                            secret: cfg.secretKey,
-                            signOptions: { expiresIn: cfg.expiration },
-                        };
-                    },
-                    inject: [ConfigService]
-                }),
-                
-            ],
-            module: UserCoreModule,
-            providers: [
-                UserService,
-                AuthService,
-                JwtStrategy,
-                JwtAuthGuard,
-            ],
-            exports: [
-                UserService,
-                AuthService,
-                JwtStrategy,
-                JwtAuthGuard,
-            ],
-        };
-    }
+  static fooRootAsync(): DynamicModule {
+    return {
+      imports: [
+        DoctiveCoreModule,
+        DbAccessModule,
+        HttpModule,
+        PassportModule.register({
+          defaultStrategy: 'jwt',
+          property: 'user',
+          session: false,
+        }),
+        JwtModule.registerAsync({
+          useFactory: (cfgService: ConfigService) => {
+            const cfg = cfgService.get<JwtConfig>('jwt');
+            return {
+              secret: cfg.secretKey,
+              signOptions: { expiresIn: cfg.expiration },
+            };
+          },
+          inject: [ConfigService],
+        }),
+      ],
+      module: UserCoreModule,
+      providers: [UserService, AuthService, JwtStrategy, JwtAuthGuard],
+      exports: [UserService, AuthService, JwtStrategy, JwtAuthGuard],
+    };
+  }
 }

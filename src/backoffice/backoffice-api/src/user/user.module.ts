@@ -7,4 +7,4 @@ import { UserCoreModule } from './user-core.module';
   imports: [UserCoreModule.fooRootAsync()],
   controllers: [UserController],
 })
-export class UserModule { }
+export class UserModule {}
