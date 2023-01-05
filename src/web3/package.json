@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "abis": "node ./abi-gen.js"
+  },
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^2.1.4",
+    "uuid": "^9.0.0",
+    "web3": "^1.8.1"
+  }
+}

@@ -1,0 +1,6 @@
+<app-container title="Login" icon="fa-right-to-bracket" [isLoading]="isLoading" [isSubmitting]="isSubmitting">
+    <div class="w-full mb-5">
+        <p>Click the <button mat-flat-button color="primary" [disabled]="isSubmitting" (click)="login()">Login</button>
+            button to authenticate yourself using your wallet!</p>
+    </div>
+</app-container>

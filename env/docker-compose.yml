@@ -1,0 +1,37 @@
+version: "3.9"
+name: doctive-local
+services:
+  sqlserver: 
+    image: mcr.microsoft.com/mssql/server
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=D0ct1v3_1337
+    ports: 
+      - 1433:1433
+
+  mongodb:
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo
+      - MONGO_INITDB_ROOT_PASSWORD=mongo
+    ports: 
+      - 27017:27017
+
+  redis: 
+    image: bitnami/redis:latest
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports: 
+      - 6379:6379
+
+  localstacks3:
+    image: localstack/localstack:latest
+    environment:
+      - SERVICES:s3
+      - DEFAULT_REGION=eu-west-1
+      - AWS_DEFAULT_REGION=eu-west-1
+      - HOSTNAME_EXTERNAL=localhost
+      - USE_SSL=false
+    ports:
+      - 4566:4566
