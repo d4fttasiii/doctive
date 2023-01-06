@@ -63,13 +63,13 @@ const generateModels = (allEndpoints) => {
             body
         ];
     });
-    return [...new Set(models.flat().filter(m => m !== 'any'))];
+    return [...new Set(models.flat().filter(m => m !== 'any' && m))];
 };
 const generateService = (serviceName, modelImports, methodCalls) => {
     const content = `
 import { Injectable } from '@angular/core';
 
-import { ApiService } from './api.service';
+import { ApiService, HttpOptions } from './api.service';
 ${modelImports}
 
 @Injectable({
@@ -102,6 +102,8 @@ const generate = async (baseUrl, pathToSave, serviceName) => {
         if (e.verb !== 'get' && e.data.requestBody?.content) {
             methodParameters.push(`data: ${bodyType}`);
             apiCallParameters.push('data');
+            methodParameters.push('options: HttpOptions');
+            apiCallParameters.push('options');
         }
         const responseType = extractResponse(e.data.responses);
         const response = `Promise<${responseType}>`;
@@ -109,6 +111,7 @@ const generate = async (baseUrl, pathToSave, serviceName) => {
         return `${method} async (${methodParameters.join(', ')}): ${response} => this.apiService.${e.verb}${apiCallResponse}(${apiCallParameters.join(', ')});`;
     });
     const models = generateModels(allEndpoints);
+    console.log(models);
     const serviceContent = generateService(serviceName, `import { ${models.join(', ')} } from '../generated-models';`, methodCalls);
     const indexContent = generateIndex(serviceName);
     (0, fs_1.writeFileSync)(`${pathToSave}/${serviceName}.service.ts`, serviceContent);

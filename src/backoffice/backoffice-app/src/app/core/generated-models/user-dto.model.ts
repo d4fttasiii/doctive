@@ -6,9 +6,9 @@
 
 
 
-export interface IUpdateUserDto {
+export interface IUserDto {
     id?: number;
-    address?: string;
+    walletAddress?: string;
     name?: string;
     email?: string;
     createdAt?: Date;
@@ -20,9 +20,9 @@ export interface IUpdateUserDto {
 }
 
 
-export class UpdateUserDto  implements IUpdateUserDto  {
+export class UserDto  implements IUserDto  {
     id: number;
-    address: string;
+    walletAddress: string;
     name: string;
     email: string;
     createdAt: Date;

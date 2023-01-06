@@ -1,22 +1,42 @@
 import { PrismaService } from '@/db-access/prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
-import { Prisma, User, UserSession } from '@prisma/client';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { Prisma, User } from '@prisma/client';
+import { Web3Service } from 'doctive-core';
+import moment from 'moment';
+
+import { UserListDto } from '../models/user-dto';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private web3: Web3Service) { }
 
-  async findByAddress(address: string): Promise<User | null> {
-    return await this.prisma.user.findUnique({
-      where: {
-        address: address,
-      },
+  async create(data: Prisma.UserCreateInput): Promise<User> {
+    this.ensureValidAddress(data.walletAddress?.toString());
+    this.ensureUnique(data.walletAddress, data.email);
+
+    return await this.prisma.user.create({
+      data,
     });
   }
 
-  async create(data: Prisma.UserCreateInput): Promise<User> {
-    return await this.prisma.user.create({
-      data,
+  async list(take = 50, skip = 0): Promise<UserListDto[]> {
+    return await this.prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        walletAddress: true,
+      },
+      skip: skip,
+      take: take,
+    });
+  }
+
+  async findByAddress(walletAddress: string): Promise<User | null> {
+    return await this.prisma.user.findUnique({
+      where: {
+        walletAddress: walletAddress,
+      },
     });
   }
 
@@ -25,39 +45,38 @@ export class UserService {
     data: Prisma.UserUpdateInput;
   }): Promise<User> {
     const { where, data } = params;
+    this.ensureUnique(data.walletAddress?.toString(), data.email?.toString());
+
     return await this.prisma.user.update({
-      data,
+      data: {
+        email: data.email,
+        name: data.name,
+        role: data.role,
+        lockEnabled: data.lockEnabled,
+        modifiedAt: moment().toNow(),
+      },
       where,
     });
   }
 
-  async findLatestSession(userId: number): Promise<UserSession | null> {
-    return await this.prisma.userSession.findFirst({
+  private ensureValidAddress(address: string) {
+    if (!this.web3.isValidAddress(address)) {
+      throw new BadRequestException(`${address} is not a valid address.`);
+    }
+  }
+
+  private async ensureUnique(walletAddress: string, email: string) {
+    const count = await this.prisma.user.count({
       where: {
-        userId: userId,
-      },
-      orderBy: {
-        createdAt: Prisma.SortOrder.desc,
-      },
+        OR: {
+          walletAddress: walletAddress,
+          email: email,
+        }
+      }
     });
-  }
 
-  async createSession(
-    data: Prisma.UserSessionCreateInput,
-  ): Promise<UserSession> {
-    return await this.prisma.userSession.create({
-      data,
-    });
-  }
-
-  async updateSession(params: {
-    where: Prisma.UserSessionWhereUniqueInput;
-    data: Prisma.UserSessionUpdateInput;
-  }): Promise<UserSession> {
-    const { where, data } = params;
-    return await this.prisma.userSession.update({
-      data,
-      where,
-    });
+    if (count > 0) {
+      throw new BadRequestException(`Address and email properties have to be unique.`);
+    }
   }
 }

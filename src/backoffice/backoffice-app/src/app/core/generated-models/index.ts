@@ -6,4 +6,8 @@
 
 export * from './login-message.model';
 export * from './login-dto.model';
-export * from './update-user-dto.model';
+export * from './user-dto.model';
+export * from './upsert-user-dto.model';
+export * from './institution-list-dto.model';
+export * from './institution-dto.model';
+export * from './upsert-institution-dto.model';

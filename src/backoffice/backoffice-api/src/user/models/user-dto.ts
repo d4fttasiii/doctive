@@ -1,15 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 
-export class UpdateUserDto implements User {
+export class UserListDto {
   @ApiProperty({ type: 'number' })
   id: number;
   @ApiProperty({ type: 'string' })
-  address: string;
+  walletAddress: string;
   @ApiProperty({ type: 'string' })
   name: string;
   @ApiProperty({ type: 'string' })
   email: string;
+}
+
+export class UserDto extends UserListDto implements User {
   @ApiProperty({ type: 'Date' })
   createdAt: Date;
   @ApiProperty({ type: 'Date' })

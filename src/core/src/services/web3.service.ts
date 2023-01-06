@@ -23,6 +23,10 @@ export class Web3Service {
         return new this.client.eth.Contract(ABI, contractAddress);
     }
 
+    isValidAddress(address: string): boolean {
+        return this.client.utils.isAddress(address);
+    }
+
     async buildContractTx(from: string, to: string, data: any): Promise<TransactionConfig> {
         const tx = {
             from: from,

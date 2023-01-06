@@ -1,33 +1,38 @@
+import { PrismaService } from '@/db-access/prisma/prisma.service';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
-import { UtilService, Web3Service } from 'doctive-core';
+import { Prisma, User, UserSession } from '@prisma/client';
+import { Web3Service } from 'doctive-core';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 
 import { JwtPayload } from '../models/jwt-payload';
-import { LoginMessage } from '../models/login-message';
-import { UserService } from './user.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtTokenService: JwtService,
-    private userService: UserService,
-    private utilsService: UtilService,
+    private prisma: PrismaService,
     private web3: Web3Service,
   ) { }
 
   async signIn(address: string, signature: string): Promise<string> {
-    const user = await this.userService.findByAddress(address);
-    const session = await this.userService.findLatestSession(user.id);
+    const user = await this.findByAddress(address);
+    const session = await this.prisma.userSession.findFirst({
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        createdAt: Prisma.SortOrder.desc,
+      },
+    });
 
     if (
       !(
         user &&
         session &&
         !session.used &&
-        (await this.verifySignature(user.address, session.message, signature))
+        (await this.verifySignature(user.walletAddress, session.message, signature))
       )
     ) {
       await this.handleUsedSession(session.id);
@@ -37,7 +42,7 @@ export class AuthService {
     }
 
     const payload: JwtPayload = {
-      walletAddress: user.address,
+      walletAddress: user.walletAddress,
       name: user.name,
     };
     await this.handleUsedSession(session.id);
@@ -51,7 +56,7 @@ export class AuthService {
       const payload = await this.jwtTokenService.verifyAsync(token);
       const { walletAddress } = payload;
 
-      const user = await this.userService.findByAddress(walletAddress);
+      const user = await this.findByAddress(walletAddress);
       if (user) {
         isValid = true;
       }
@@ -62,12 +67,12 @@ export class AuthService {
     return isValid;
   }
 
-  async generateMessage(address: string): Promise<LoginMessage> {
-    const user = await this.userService.findByAddress(address);
+  async generateMessage(address: string): Promise<string> {
+    const user = await this.findByAddress(address);
     if (!user) {
       throw new UnauthorizedException();
     }
-    const session = await this.userService.createSession({
+    const session = await this.createSession({
       message: uuidv4(),
       User: {
         connect: {
@@ -76,13 +81,27 @@ export class AuthService {
       },
     });
 
-    return {
-      message: session.message,
-    };
+    return session.message;
+  }
+
+  async findByAddress(walletAddress: string): Promise<User | null> {
+    return await this.prisma.user.findUnique({
+      where: {
+        walletAddress: walletAddress,
+      },
+    });
+  }
+
+  async createSession(
+    data: Prisma.UserSessionCreateInput,
+  ): Promise<UserSession> {
+    return await this.prisma.userSession.create({
+      data,
+    });
   }
 
   private async handleUsedSession(sessionId: number) {
-    await this.userService.updateSession({
+    await this.prisma.userSession.update({
       where: {
         id: sessionId,
       },
@@ -97,7 +116,7 @@ export class AuthService {
       return;
     }
     const failedAttempts = user.loginAttempts + 1;
-    await this.userService.update({
+    await this.prisma.user.update({
       where: { id: user.id },
       data: {
         loginAttempts: failedAttempts,

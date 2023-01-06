@@ -16,7 +16,11 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "ncu:validate": "npx npm-check-updates",
-    "ncu:update": "npx npm-check-updates -u"
+    "ncu:update": "npx npm-check-updates -u",
+    "db:generate": "npx prisma generate",
+    "db:add-migration": "npx prisma migrate dev --name",
+    "db:execute-migration": "npx prisma migrate dev",
+    "db:seed": "npx prisma db seed"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -33,6 +37,8 @@
     "@nestjs/platform-fastify": "^9.2.1",
     "@nestjs/swagger": "^6.1.4",
     "@prisma/client": "^4.8.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
     "doctive-core": "file:../../core",
     "fastify": "^4.11.0",
     "moment": "^2.29.4",

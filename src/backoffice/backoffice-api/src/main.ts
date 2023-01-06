@@ -1,4 +1,4 @@
-import { VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import {
@@ -29,12 +29,13 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI,
   });
+  app.useGlobalPipes(new ValidationPipe());
 
   const document = SwaggerModule.createDocument(
     app,
     new DocumentBuilder()
-      .setTitle('Doctive API')
-      .setDescription('The Doctive API description')
+      .setTitle('Doctive Backoffice API')
+      .setDescription('The Doctive Backoffice API description')
       .setVersion('1.0')
       .build(),
   );
@@ -45,7 +46,7 @@ async function bootstrap() {
   const cfg = configService.get<AppConfig>('app');
 
   await app.listen(cfg.port, '0.0.0.0', () =>
-    console.log(`🩺Backoffice-API🩺 started on port: ${cfg.port}`),
+    console.log(`🩺Doctive Backoffice API🩺 started on port: ${cfg.port}`),
   );
 }
 bootstrap();

@@ -4,6 +4,7 @@ import { DoctiveConfig } from 'doctive-core';
 
 import { UserModule } from './user/user.module';
 import { AdminModule } from './admin/admin.module';
+import { InstitutionModule } from './institution/institution.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AdminModule } from './admin/admin.module';
     }),
     UserModule,
     AdminModule,
+    InstitutionModule,
   ],
 })
 export class AppModule {}
