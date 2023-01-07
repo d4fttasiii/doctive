@@ -3,9 +3,6 @@ import { Module } from '@nestjs/common';
 import { DoctiveCoreModule } from 'doctive-core';
 
 @Module({
-  imports: [
-    DoctiveCoreModule,
-    DbAccessModule,
-  ]
+  imports: [DoctiveCoreModule, DbAccessModule],
 })
-export class AdminModule { }
+export class AdminModule {}

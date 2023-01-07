@@ -14,7 +14,7 @@ export class AuthService {
     private jwtTokenService: JwtService,
     private prisma: PrismaService,
     private web3: Web3Service,
-  ) { }
+  ) {}
 
   async signIn(address: string, signature: string): Promise<string> {
     const user = await this.findByAddress(address);
@@ -32,7 +32,11 @@ export class AuthService {
         user &&
         session &&
         !session.used &&
-        (await this.verifySignature(user.walletAddress, session.message, signature))
+        (await this.verifySignature(
+          user.walletAddress,
+          session.message,
+          signature,
+        ))
       )
     ) {
       await this.handleUsedSession(session.id);

@@ -8,7 +8,7 @@ import { UserListDto } from '../models/user-dto';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService, private web3: Web3Service) { }
+  constructor(private prisma: PrismaService, private web3: Web3Service) {}
 
   async create(data: Prisma.UserCreateInput): Promise<User> {
     this.ensureValidAddress(data.walletAddress?.toString());
@@ -71,12 +71,14 @@ export class UserService {
         OR: {
           walletAddress: walletAddress,
           email: email,
-        }
-      }
+        },
+      },
     });
 
     if (count > 0) {
-      throw new BadRequestException(`Address and email properties have to be unique.`);
+      throw new BadRequestException(
+        `Address and email properties have to be unique.`,
+      );
     }
   }
 }

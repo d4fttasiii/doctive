@@ -6,12 +6,8 @@ import { InstitutionController } from './controllers/institution.controller';
 import { InstitutionService } from './services/institution.service';
 
 @Module({
-    imports: [
-        DoctiveCoreModule,
-        DbAccessModule,
-        AuthModule.fooRootAsync(),
-    ],
-    controllers: [InstitutionController],
-    providers: [InstitutionService],
+  imports: [DoctiveCoreModule, DbAccessModule, AuthModule.fooRootAsync()],
+  controllers: [InstitutionController],
+  providers: [InstitutionService],
 })
 export class InstitutionModule {}
