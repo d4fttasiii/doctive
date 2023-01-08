@@ -1,6 +1,6 @@
 import { PrismaService } from '@/db-access/prisma/prisma.service';
 import { AuthResponse } from '@/user/models/auth-response';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, User, UserSession } from '@prisma/client';
@@ -20,8 +20,8 @@ export class AuthService {
     private web3: Web3Service,
   ) { }
 
-  async signIn(address: string, signature: string): Promise<AuthResponse> {
-    const user = await this.findByAddress(address);
+  async signIn(walletAddress: string, signature: string): Promise<AuthResponse> {
+    const user = await this.findByAddress(walletAddress);
     const session = await this.prisma.userSession.findFirst({
       where: {
         userId: user.id,
@@ -48,30 +48,20 @@ export class AuthService {
 
       throw new UnauthorizedException();
     }
-
-    const payload: JwtPayload = {
-      walletAddress: user.walletAddress,
-      name: user.name,
-    };
     await this.handleUsedSession(session.id);
 
-    const jwtConfig = this.configService.get<JwtConfig>('jwt');
-    const [access_token, refresh_token] = await Promise.all([
-      this.jwtTokenService.signAsync(payload),
-      this.jwtTokenService.signAsync(payload, {
-        secret: jwtConfig.refreshKey,
-        expiresIn: jwtConfig.refreshTokenExpiration,
-      }),
-    ]);
-    await this.handleRefreshToken(user.id, refresh_token);
-
-    return {
-      access_token,
-      refresh_token,
-    };
+    return await this.generateJwtTokens(user);
   }
 
-  async refreshJwt() { }
+  async refreshJwt(walletAddress: string, refreshToken: string): Promise<AuthResponse> {
+    const user = await this.findByAddress(walletAddress);
+    if (!user || !user.refreshToken) {
+      throw new ForbiddenException('Unable to refresh tokens');
+    }
+    await this.ensureValidRefreshToken(refreshToken, user.refreshToken);
+
+    return await this.generateJwtTokens(user);
+  }
 
   async verifyJwt(token: string): Promise<boolean> {
     let isValid: boolean = false;
@@ -162,11 +152,40 @@ export class AuthService {
     });
   }
 
+  private async generateJwtTokens(user: User): Promise<AuthResponse> {
+    const payload: JwtPayload = {
+      walletAddress: user.walletAddress,
+      name: user.name,
+    };
+    const jwtConfig = this.configService.get<JwtConfig>('jwt');
+    const [access_token, refresh_token] = await Promise.all([
+      this.jwtTokenService.signAsync(payload),
+      this.jwtTokenService.signAsync(payload, {
+        secret: jwtConfig.refreshKey,
+        expiresIn: jwtConfig.refreshTokenExpiration,
+      }),
+    ]);
+    await this.handleRefreshToken(user.id, refresh_token);
+
+    return {
+      access_token,
+      refresh_token,
+    };
+  }
+
   private async verifySignature(
     address: string,
     message: string,
     signature: string,
   ): Promise<boolean> {
     return await this.web3.verifySignature(message, signature, address);
+  }
+
+  private async ensureValidRefreshToken(token: string, hash: string) {
+    if (await this.utils.argon2Verify(hash, token)) {
+      return;
+    }
+
+    throw new ForbiddenException('Invalid refresh token');
   }
 }

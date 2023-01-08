@@ -1,4 +1,5 @@
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth-guard';
+import { JwtAuthRefreshGuard } from '@/auth/guards/jwt-auth-refresh-guard';
 import { AuthService } from '@/auth/services/auth.service';
 import {
   Body,
@@ -18,6 +19,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { FastifyRequest } from 'fastify';
 import { FastifyReply } from 'fastify';
 import { AuthResponse } from '../models/auth-response';
 
@@ -88,7 +90,34 @@ export class UserController {
     return result;
   }
 
-  // @Get('refresh')
+  @Get('refresh')
+  @UseGuards(JwtAuthRefreshGuard)
+  @ApiOperation({ summary: 'Refreshes JWT Token' })
+  @ApiResponse({ status: 200, description: 'JWT Token', type: AuthResponse })
+  async refresh(
+    @Request() req: FastifyRequest | any,
+    @Res({ passthrough: true }) res: FastifyReply): Promise<AuthResponse> {
+    const refreshToken = req.cookies.refresh_token;
+    const result = await this.authService.refreshJwt(req.user.walletAddress, refreshToken);
+
+    res.header('Access-Control-Expose-Headers', 'Set-Cookie');
+    res.setCookie('access_token', result.access_token, {
+      sameSite: 'lax',
+      secure: false,
+      httpOnly: true,
+      maxAge: 900,
+      path: '/',
+    });
+    res.setCookie('refresh_token', result.refresh_token, {
+      sameSite: 'lax',
+      secure: false,
+      httpOnly: true,
+      maxAge: 24 * 3600,
+      path: '/',
+    });
+
+    return result;
+  }
 
   // @Get('own')
   // @UseGuards(JwtAuthGuard)
