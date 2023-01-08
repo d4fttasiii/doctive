@@ -25,4 +25,6 @@ export class UserDto extends UserListDto implements User {
   loginAttempts: number;
   @ApiProperty({ type: 'Date' })
   lockedUntil: Date;
+  @ApiProperty({ type: 'string' })
+  refreshToken: string | null;
 }

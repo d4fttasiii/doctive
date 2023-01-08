@@ -1,8 +1,10 @@
 import { PrismaService } from '@/db-access/prisma/prisma.service';
+import { AuthResponse } from '@/user/models/auth-response';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, User, UserSession } from '@prisma/client';
-import { Web3Service } from 'doctive-core';
+import { JwtConfig, UtilService, Web3Service } from 'doctive-core';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -11,12 +13,14 @@ import { JwtPayload } from '../models/jwt-payload';
 @Injectable()
 export class AuthService {
   constructor(
+    private configService: ConfigService,
     private jwtTokenService: JwtService,
+    private utils: UtilService,
     private prisma: PrismaService,
     private web3: Web3Service,
-  ) {}
+  ) { }
 
-  async signIn(address: string, signature: string): Promise<string> {
+  async signIn(address: string, signature: string): Promise<AuthResponse> {
     const user = await this.findByAddress(address);
     const session = await this.prisma.userSession.findFirst({
       where: {
@@ -51,8 +55,23 @@ export class AuthService {
     };
     await this.handleUsedSession(session.id);
 
-    return await this.jwtTokenService.signAsync(payload);
+    const jwtConfig = this.configService.get<JwtConfig>('jwt');
+    const [access_token, refresh_token] = await Promise.all([
+      this.jwtTokenService.signAsync(payload),
+      this.jwtTokenService.signAsync(payload, {
+        secret: jwtConfig.refreshKey,
+        expiresIn: jwtConfig.refreshTokenExpiration,
+      }),
+    ]);
+    await this.handleRefreshToken(user.id, refresh_token);
+
+    return {
+      access_token,
+      refresh_token,
+    };
   }
+
+  async refreshJwt() { }
 
   async verifyJwt(token: string): Promise<boolean> {
     let isValid: boolean = false;
@@ -126,7 +145,20 @@ export class AuthService {
         loginAttempts: failedAttempts,
         lockedUntil:
           failedAttempts >= 5 ? moment().add(5, 'minutes').toDate() : null,
+        refreshToken: null,
       },
+    });
+  }
+
+  private async handleRefreshToken(userId: number, refreshToken: string) {
+    const hash = await this.utils.argon2Hash(refreshToken);
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        refreshToken: hash,
+      }
     });
   }
 

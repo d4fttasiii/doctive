@@ -19,6 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FastifyReply } from 'fastify';
+import { AuthResponse } from '../models/auth-response';
 
 import { LoginDto } from '../models/login-dto';
 import { LoginMessage } from '../models/login-message';
@@ -32,7 +33,7 @@ export class UserController {
   constructor(
     private authService: AuthService,
     private userService: UserService,
-  ) {}
+  ) { }
 
   @Get('login/:walletAddress')
   @ApiParam({
@@ -59,24 +60,35 @@ export class UserController {
   @Post('login')
   @ApiBody({ type: LoginDto })
   @ApiOperation({ summary: 'Verifies signature with the users public key.' })
-  @ApiResponse({ status: 200, description: 'JWT Token' })
+  @ApiResponse({ status: 200, description: 'JWT Token', type: AuthResponse })
   async login(
     @Body() login: LoginDto,
     @Res({ passthrough: true }) res: FastifyReply,
-  ) {
-    const jwtToken = await this.authService.signIn(
+  ): Promise<AuthResponse> {
+    const result = await this.authService.signIn(
       login.address,
       login.signature,
     );
     res.header('Access-Control-Expose-Headers', 'Set-Cookie');
-    res.setCookie('access_token', jwtToken, {
+    res.setCookie('access_token', result.access_token, {
+      sameSite: 'lax',
+      secure: false,
+      httpOnly: true,
+      maxAge: 900,
+      path: '/',
+    });
+    res.setCookie('refresh_token', result.refresh_token, {
       sameSite: 'lax',
       secure: false,
       httpOnly: true,
       maxAge: 24 * 3600,
       path: '/',
     });
+
+    return result;
   }
+
+  // @Get('refresh')
 
   // @Get('own')
   // @UseGuards(JwtAuthGuard)
@@ -103,7 +115,6 @@ export class UserController {
   //     data: data,
   //   });
   // }
-
   @Get(':take/:skip')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Lists users' })

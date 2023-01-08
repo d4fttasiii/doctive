@@ -42,8 +42,10 @@ export const DoctiveConfig = (): Config => ({
     password: process.env.DOCTIVE_REDIS_PASSWORD,
   },
   jwt: {
-    secretKey: process.env.DOCTIVE_JWT_SECRET || 'S3cr3t',
-    expiration: process.env.DOCTIVE_JWT_EXPIRATION || '3600s',
+    secretKey: process.env.DOCTIVE_JWT_SECRET_KEY || 'S3cr3t',
+    refreshKey: process.env.DOCTIVE_JWT_REFRESH_KEY || 'S3cr3t_r3fr3sH',
+    accessTokenExpiration: process.env.DOCTIVE_JWT_ACCESS_TOKEN_EXPIRATION || '5m',
+    refreshTokenExpiration: process.env.DOCTIVE_JWT_ACCESS_TOKEN_EXPIRATION || '1d',
   },
   network: {
     storageApiUrl: process.env.DOCTIVE_STORAGE_API_URL || 'http://localhost:3002',

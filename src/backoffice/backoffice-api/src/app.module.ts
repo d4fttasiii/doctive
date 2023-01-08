@@ -13,8 +13,8 @@ import { InstitutionModule } from './institution/institution.module';
       isGlobal: true,
       envFilePath: './env/debug.env',
     }),
-    UserModule,
     AdminModule,
+    UserModule,
     InstitutionModule,
   ],
 })

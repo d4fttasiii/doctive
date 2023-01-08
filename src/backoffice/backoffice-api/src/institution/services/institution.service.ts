@@ -1,6 +1,11 @@
 import { PrismaService } from '@/db-access/prisma/prisma.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Institution, InstitutionManager, InstitutionSubscription, Prisma } from '@prisma/client';
+import {
+  Institution,
+  InstitutionManager,
+  InstitutionSubscription,
+  Prisma,
+} from '@prisma/client';
 import { Web3Service } from 'doctive-core';
 import moment from 'moment';
 
@@ -11,7 +16,7 @@ import { UpsertInstitutionSubscriptionDto } from '../models/upsert-institution-s
 
 @Injectable()
 export class InstitutionService {
-  constructor(private prisma: PrismaService, private web3: Web3Service) { }
+  constructor(private prisma: PrismaService, private web3: Web3Service) {}
 
   async create(data: Prisma.InstitutionCreateInput): Promise<Institution> {
     this.ensureUnique(data.name, data.email);
@@ -39,7 +44,7 @@ export class InstitutionService {
       },
       include: {
         Subscription: true,
-      }
+      },
     });
   }
 
@@ -85,7 +90,10 @@ export class InstitutionService {
     });
   }
 
-  async createManager(institutionId: number, data: UpsertInstitutionManagerDto): Promise<InstitutionManager> {
+  async createManager(
+    institutionId: number,
+    data: UpsertInstitutionManagerDto,
+  ): Promise<InstitutionManager> {
     this.ensureValidAddress(data.walletAddress);
     this.ensureUniqueManager(data.walletAddress, data.email);
 
@@ -95,13 +103,16 @@ export class InstitutionService {
         Institution: {
           connect: {
             id: institutionId,
-          }
-        }
-      }
+          },
+        },
+      },
     });
   }
 
-  async listManagers(take = 50, skip = 0): Promise<InstitutionManagerListDto[]> {
+  async listManagers(
+    take = 50,
+    skip = 0,
+  ): Promise<InstitutionManagerListDto[]> {
     return await this.prisma.institutionManager.findMany({
       select: {
         id: true,
@@ -114,11 +125,13 @@ export class InstitutionService {
     });
   }
 
-  async findManagerByAddress(walletAddress: string): Promise<InstitutionManager | null> {
+  async findManagerByAddress(
+    walletAddress: string,
+  ): Promise<InstitutionManager | null> {
     return await this.prisma.institutionManager.findUnique({
       where: {
         walletAddress: walletAddress,
-      }
+      },
     });
   }
 
@@ -128,7 +141,10 @@ export class InstitutionService {
   }): Promise<InstitutionManager | null> {
     const { where, data } = params;
     this.ensureValidAddress(data.walletAddress?.toString());
-    this.ensureUniqueManager(data.walletAddress?.toString(), data.email?.toString());
+    this.ensureUniqueManager(
+      data.walletAddress?.toString(),
+      data.email?.toString(),
+    );
 
     return await this.prisma.institutionManager.update({
       data: {
@@ -136,7 +152,7 @@ export class InstitutionService {
         name: data.name,
         modifiedAt: moment().toNow(),
       },
-      where
+      where,
     });
   }
 

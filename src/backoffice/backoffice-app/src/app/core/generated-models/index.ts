@@ -6,8 +6,13 @@
 
 export * from './login-message.model';
 export * from './login-dto.model';
+export * from './auth-response.model';
 export * from './user-dto.model';
 export * from './upsert-user-dto.model';
 export * from './institution-list-dto.model';
 export * from './institution-dto.model';
 export * from './upsert-institution-dto.model';
+export * from './institution-subscription-dto.model';
+export * from './institution-manager-list-dto.model';
+export * from './upsert-institution-manager-dto.model';
+export * from './institution-manager-dto.model';

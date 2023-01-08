@@ -42,7 +42,9 @@ export interface RedisConfig {
 
 export interface JwtConfig {
     secretKey: string;
-    expiration: string;
+    refreshKey: string;
+    accessTokenExpiration: string;
+    refreshTokenExpiration: string;
 }
 
 export interface JwtCookieStorageConfig {

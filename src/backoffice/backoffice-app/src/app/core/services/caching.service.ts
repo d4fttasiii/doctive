@@ -7,9 +7,9 @@ import { CachingStorageType } from '@core/models/caching-storage';
 export class CachingService {
   private store = new Map<string, any>();
 
-  constructor() {}
+  constructor() { }
 
-  cacheData(
+  set(
     key: string,
     data: any,
     storage: CachingStorageType,
@@ -29,6 +29,11 @@ export class CachingService {
   get<TType>(key: string): TType {
     return (this.loadFromMemory(key) ||
       this.loadFromLocalStorage(key)) as TType;
+  }
+
+  remove(key: string) {
+    this.removeFromLocalStorage(key);
+    this.removeFromMemory(key);
   }
 
   private loadFromMemory<TType>(key: string): TType {
@@ -87,6 +92,14 @@ export class CachingService {
     };
 
     this.store.set(key, record);
+  }
+
+  private removeFromLocalStorage(key: string) {
+    localStorage.removeItem(key);
+  }
+
+  private removeFromMemory(key: string) {
+    this.store.set(key, undefined);
   }
 
   private resetCache() {

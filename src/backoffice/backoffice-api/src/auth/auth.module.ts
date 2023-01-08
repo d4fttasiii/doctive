@@ -7,8 +7,10 @@ import { PassportModule } from '@nestjs/passport';
 import { DoctiveCoreModule, JwtConfig } from 'doctive-core';
 
 import { JwtAuthGuard } from './guards/jwt-auth-guard';
+import { JwtAuthRefreshGuard } from './guards/jwt-auth-refresh-guard';
 import { AuthService } from './services/auth.service';
-import { JwtStrategy } from './strategies/jwt-strategy';
+import { AccessTokenStrategy } from './strategies/access-token.strategy';
+import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 
 @Module({})
 export class AuthModule {
@@ -28,15 +30,21 @@ export class AuthModule {
             const cfg = cfgService.get<JwtConfig>('jwt');
             return {
               secret: cfg.secretKey,
-              signOptions: { expiresIn: cfg.expiration },
+              signOptions: { expiresIn: cfg.accessTokenExpiration },
             };
           },
           inject: [ConfigService],
         }),
       ],
       module: AuthModule,
-      providers: [JwtStrategy, AuthService, JwtAuthGuard],
-      exports: [JwtStrategy, AuthService, JwtAuthGuard],
+      providers: [
+        AccessTokenStrategy,
+        RefreshTokenStrategy,
+        AuthService,
+        JwtAuthGuard,
+        JwtAuthRefreshGuard,
+      ],
+      exports: [AuthService, JwtAuthGuard, JwtAuthRefreshGuard],
     };
   }
 }

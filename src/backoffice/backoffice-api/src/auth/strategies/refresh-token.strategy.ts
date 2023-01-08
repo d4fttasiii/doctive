@@ -1,30 +1,32 @@
-import { PrismaService } from '@/db-access/prisma/prisma.service';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { User } from '@prisma/client';
-import { JwtConfig } from 'doctive-core';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { extractJwtRefreshTokenFromCookie } from '../helpers/helpers';
+import { ConfigService } from '@nestjs/config';
+import { JwtConfig } from 'doctive-core';
+import { PrismaService } from '@/db-access/prisma/prisma.service';
 import { JwtPayload } from '../models/jwt-payload';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class RefreshTokenStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh',
+) {
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        JwtStrategy.extractJWT,
+        extractJwtRefreshTokenFromCookie,
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
-      ignoreExpiration: false,
-      secretOrKey: configService.get<JwtConfig>('jwt').secretKey,
+      secretOrKey: configService.get<JwtConfig>('jwt').refreshKey,
+      passReqToCallback: true,
     });
   }
 
-  async validate(payload: JwtPayload): Promise<User> {
+  async validate(payload: JwtPayload) {
     const { walletAddress } = payload;
     const user = await this.prisma.user.findUnique({
       where: {
@@ -37,17 +39,5 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     return user;
-  }
-
-  private static extractJWT(req: any): string | null {
-    if (
-      req.cookies &&
-      'access_token' in req.cookies &&
-      req.cookies.access_token.length > 0
-    ) {
-      return req.cookies.access_token;
-    }
-
-    return null;
   }
 }
