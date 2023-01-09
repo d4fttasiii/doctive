@@ -18,6 +18,11 @@ export interface HttpOptions {
   withCredentials?: boolean;
 }
 
+const DefaultHttpOptions = {
+  withCredentials: true,
+  responseType: 'json'
+} as HttpOptions;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -29,41 +34,41 @@ export class ApiService {
 
   get<TResponse>(
     url: string,
-    options?: HttpOptions
+    options: HttpOptions = null
   ): Promise<TResponse> {
 
-    return firstValueFrom(this.http.get<TResponse>(this.toUrl(url), options));
+    return firstValueFrom(this.http.get<TResponse>(this.toUrl(url), options || DefaultHttpOptions));
   }
 
   delete<TResponse>(
     url: string,
-    options?: HttpOptions
+    options: HttpOptions = null
   ): Promise<TResponse> {
-    return firstValueFrom(this.http.delete<TResponse>(this.toUrl(url), options));
+    return firstValueFrom(this.http.delete<TResponse>(this.toUrl(url), options || DefaultHttpOptions));
   }
 
   post<TResponse>(
     url: string,
     toPost: any,
-    options?: HttpOptions
+    options: HttpOptions = null
   ): Promise<TResponse> {
-    return firstValueFrom(this.http.post<TResponse>(this.toUrl(url), toPost, options));
+    return firstValueFrom(this.http.post<TResponse>(this.toUrl(url), toPost, options || DefaultHttpOptions));
   }
 
   put<TResponse>(
     url: string,
     toPost: any,
-    options?: HttpOptions
+    options: HttpOptions = null
   ): Promise<TResponse> {
-    return firstValueFrom(this.http.put<TResponse>(this.toUrl(url), toPost, options));
+    return firstValueFrom(this.http.put<TResponse>(this.toUrl(url), toPost, options || DefaultHttpOptions));
   }
 
   patch<TResponse>(
     url: string,
     toPost: any,
-    options?: HttpOptions
+    options: HttpOptions = null
   ): Promise<TResponse> {
-    return firstValueFrom(this.http.patch<TResponse>(this.toUrl(url), toPost, options));
+    return firstValueFrom(this.http.patch<TResponse>(this.toUrl(url), toPost, options || DefaultHttpOptions));
   }
 
   private toUrl(path: string): string {

@@ -9,7 +9,7 @@ export class AuthGuard implements CanActivate {
 
   constructor(private authService: AuthService) { }
 
-  async canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
-    return await this.authService.isLoggedIn();
+  canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    return this.authService.isLoggedIn() || this.authService.canUseRefreshToken();
   }
 }

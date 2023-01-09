@@ -1,10 +1,12 @@
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { extractJwtRefreshTokenFromCookie } from '../helpers/helpers';
-import { ConfigService } from '@nestjs/config';
-import { JwtConfig } from 'doctive-core';
 import { PrismaService } from '@/db-access/prisma/prisma.service';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import { JwtConfig } from 'doctive-core';
+import { FastifyRequest } from 'fastify';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+
+import { extractJwtRefreshTokenFromCookie } from '../helpers/helpers';
 import { JwtPayload } from '../models/jwt-payload';
 
 @Injectable()
@@ -26,7 +28,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
     });
   }
 
-  async validate(payload: JwtPayload) {
+  async validate(req: FastifyRequest, payload: JwtPayload) {
     const { walletAddress } = payload;
     const user = await this.prisma.user.findUnique({
       where: {

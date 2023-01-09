@@ -11,8 +11,8 @@ import { BackofficeService } from '@core/services/backoffice.service';
 export class UserListComponent implements OnInit {
   isLoading = true;
   isSubmitting = false;
-  take: number;
-  skip: number;
+  take = 50;
+  skip = 0;
 
   displayedColumns: string[] = ['id', 'name', 'email', 'walletAddress', 'actions'];
   dataSource: MatTableDataSource<UserListDto> =
@@ -24,6 +24,9 @@ export class UserListComponent implements OnInit {
     const data = await this.backoffice.userControllerGetAllUser(
       this.take.toString(),
       this.skip.toString(),
+      {
+        withCredentials: true,
+      }
     );
     this.dataSource.data = data;
     this.isLoading = false;

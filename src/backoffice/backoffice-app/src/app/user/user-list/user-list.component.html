@@ -19,15 +19,13 @@
       
             <ng-container matColumnDef="email">
               <th mat-header-cell *matHeaderCellDef>Email</th>
-              <td mat-cell *matCellDef="let element">
-                <app-address-box [address]="element.address" [length]="6"></app-address-box>
-              </td>
+              <td mat-cell *matCellDef="let element">{{ element.email }}</td>
             </ng-container>
       
             <ng-container matColumnDef="walletAddress">
               <th mat-header-cell *matHeaderCellDef>Wallet Address</th>
               <td mat-cell *matCellDef="let element">
-                <app-address-box [address]="element.walletAddress" [length]="6"></app-address-box>
+                <app-address-box [address]="element.walletAddress" [length]="10"></app-address-box>
               </td>
             </ng-container>
       

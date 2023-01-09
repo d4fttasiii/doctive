@@ -107,9 +107,9 @@ const generate = async (baseUrl, pathToSave, serviceName) => {
         if (e.verb !== "get" && e.data.requestBody?.content) {
             methodParameters.push(`data: ${bodyType}`);
             apiCallParameters.push("data");
-            methodParameters.push("options: HttpOptions");
-            apiCallParameters.push("options");
         }
+        methodParameters.push("options: HttpOptions = null");
+        apiCallParameters.push("options");
         const responseType = extractResponse(e.data.responses);
         const response = `Promise<${responseType}>`;
         const apiCallResponse = responseType === "any" ? "" : `<${responseType}>`;

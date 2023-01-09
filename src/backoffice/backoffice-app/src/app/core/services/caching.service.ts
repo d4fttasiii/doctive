@@ -36,6 +36,11 @@ export class CachingService {
     this.removeFromMemory(key);
   }
 
+  clearAll() {
+    localStorage.clear();
+    this.store = new Map<string, any>();
+  }
+
   private loadFromMemory<TType>(key: string): TType {
     if (this.store.has(key)) {
       const item = this.store.get(key);
@@ -99,11 +104,6 @@ export class CachingService {
   }
 
   private removeFromMemory(key: string) {
-    this.store.set(key, undefined);
-  }
-
-  private resetCache() {
-    localStorage.clear();
-    this.store = new Map<string, any>();
+    this.store.delete(key);
   }
 }
