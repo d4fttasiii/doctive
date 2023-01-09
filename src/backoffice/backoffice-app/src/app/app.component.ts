@@ -14,11 +14,11 @@ export class AppComponent implements OnInit {
   menuItems: MenuItem[];
 
   ngOnInit(): void {
-    this.menuItems = [{
-      icon: 'fa-user',
-      label: 'Profile',
-      route: 'profile',
-    }];
+    this.menuItems = [
+      { icon: 'fa-user', label: 'My Profile', route: 'profile' },
+      { icon: 'fa-users', label: 'Backoffice Users', route: 'user' },
+      { icon: 'fa-hospital', label: 'Medical Institutions', route: 'institution' },
+    ];
   }
 
   ngAfterViewInit() {

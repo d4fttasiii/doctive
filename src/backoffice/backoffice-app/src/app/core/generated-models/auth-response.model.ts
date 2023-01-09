@@ -8,10 +8,12 @@
 
 export interface IAuthResponse {
     access_token?: string;
+    refresh_token?: string;
 }
 
 
 export class AuthResponse  implements IAuthResponse  {
     access_token: string;
+    refresh_token: string;
 }
 

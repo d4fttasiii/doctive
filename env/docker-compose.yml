@@ -25,13 +25,11 @@ services:
     ports: 
       - 6379:6379
 
-  localstacks3:
-    image: localstack/localstack:latest
-    environment:
-      - SERVICES:s3
-      - DEFAULT_REGION=eu-west-1
-      - AWS_DEFAULT_REGION=eu-west-1
-      - HOSTNAME_EXTERNAL=localhost
-      - USE_SSL=false
+  minio:
+    image: minio/minio
     ports:
-      - 4566:4566
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - ../storage/minio:/data
+    command: server /data  --console-address ":9001"

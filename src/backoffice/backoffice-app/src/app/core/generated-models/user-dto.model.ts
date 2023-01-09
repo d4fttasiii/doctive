@@ -17,6 +17,7 @@ export interface IUserDto {
     lockEnabled?: boolean;
     loginAttempts?: number;
     lockedUntil?: Date;
+    refreshToken?: string;
 }
 
 
@@ -31,5 +32,6 @@ export class UserDto  implements IUserDto  {
     lockEnabled: boolean;
     loginAttempts: number;
     lockedUntil: Date;
+    refreshToken: string;
 }
 

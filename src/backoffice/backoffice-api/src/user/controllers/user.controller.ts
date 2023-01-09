@@ -147,7 +147,7 @@ export class UserController {
   @Get(':take/:skip')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Lists users' })
-  @ApiResponse({ status: 200, description: 'List of users', type: UserDto })
+  @ApiResponse({ status: 200, description: 'List of users', type: [UserListDto] })
   async getAllUser(
     @Param('take') take: string,
     @Param('skip') skip: string,

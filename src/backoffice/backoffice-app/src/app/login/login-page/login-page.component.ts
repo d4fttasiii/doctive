@@ -1,19 +1,28 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
 import { Web3Service } from '@core/services/web3.service';
 
 @Component({
   selector: 'app-login-page',
   templateUrl: './login-page.component.html',
-  styleUrls: ['./login-page.component.scss']
+  styleUrls: ['./login-page.component.scss'],
 })
 export class LoginPageComponent implements OnInit {
   isLoading = true;
   isSubmitting = false;
 
-  constructor(private authService: AuthService, private web3: Web3Service) { }
+  constructor(
+    private authService: AuthService,
+    private web3: Web3Service,
+    private router: Router,
+  ) {}
 
-  ngOnInit(): void {
+  async ngOnInit() {
+    const isLoggedIn = await this.authService.isLoggedIn();
+    if (isLoggedIn) {
+      this.router.navigate(['profile']);
+    }
     this.isLoading = false;
   }
 

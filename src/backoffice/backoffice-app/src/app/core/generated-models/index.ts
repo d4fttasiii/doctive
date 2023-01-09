@@ -7,6 +7,7 @@
 export * from './login-message.model';
 export * from './login-dto.model';
 export * from './auth-response.model';
+export * from './user-list-dto.model';
 export * from './user-dto.model';
 export * from './upsert-user-dto.model';
 export * from './institution-list-dto.model';
