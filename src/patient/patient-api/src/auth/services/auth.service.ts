@@ -1,12 +1,12 @@
 import { PrismaService } from '@/db-access/prisma/prisma.service';
-import { AuthResponse } from '@/auth/models/auth-response';
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, User, UserSession } from '@prisma/client';
+import { Prisma, Patient, PatientSession } from '@prisma/client';
 import { JwtConfig, UtilService, Web3Service } from 'doctive-core';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
+import { AuthResponse } from '../models/auth-response';
 
 import { JwtPayload } from '../models/jwt-payload';
 
@@ -21,10 +21,10 @@ export class AuthService {
   ) { }
 
   async signIn(walletAddress: string, signature: string): Promise<AuthResponse> {
-    const user = await this.findByAddress(walletAddress);
-    const session = await this.prisma.userSession.findFirst({
+    const patient = await this.findByAddress(walletAddress);
+    const session = await this.prisma.patientSession.findFirst({
       where: {
-        userId: user.id,
+        patientId: patient.id,
       },
       orderBy: {
         createdAt: Prisma.SortOrder.desc,
@@ -33,34 +33,34 @@ export class AuthService {
 
     if (
       !(
-        user &&
+        patient &&
         session &&
         !session.used &&
         (await this.verifySignature(
-          user.walletAddress,
+          patient.walletAddress,
           session.message,
           signature,
         ))
       )
     ) {
       await this.handleUsedSession(session.id);
-      await this.handleUnauthorized(user);
+      await this.handleUnauthorized(patient);
 
       throw new UnauthorizedException();
     }
     await this.handleUsedSession(session.id);
 
-    return await this.generateJwtTokens(user);
+    return await this.generateJwtTokens(patient);
   }
 
   async refreshJwt(walletAddress: string, refreshToken: string): Promise<AuthResponse> {
-    const user = await this.findByAddress(walletAddress);
-    if (!user || !user.refreshToken) {
+    const patient = await this.findByAddress(walletAddress);
+    if (!patient || !patient.refreshToken) {
       throw new ForbiddenException('Unable to refresh tokens');
     }
-    await this.ensureValidRefreshToken(refreshToken, user.refreshToken);
+    await this.ensureValidRefreshToken(refreshToken, patient.refreshToken);
 
-    return await this.generateJwtTokens(user);
+    return await this.generateJwtTokens(patient);
   }
 
   async verifyJwt(token: string): Promise<boolean> {
@@ -69,8 +69,8 @@ export class AuthService {
       const payload = await this.jwtTokenService.verifyAsync(token);
       const { walletAddress } = payload;
 
-      const user = await this.findByAddress(walletAddress);
-      if (user) {
+      const patient = await this.findByAddress(walletAddress);
+      if (patient) {
         isValid = true;
       }
     } catch (error) {
@@ -81,15 +81,15 @@ export class AuthService {
   }
 
   async generateMessage(address: string): Promise<string> {
-    const user = await this.findByAddress(address);
-    if (!user) {
+    const patient = await this.findByAddress(address);
+    if (!patient) {
       throw new UnauthorizedException();
     }
     const session = await this.createSession({
       message: uuidv4(),
-      User: {
+      Patient: {
         connect: {
-          id: user.id,
+          id: patient.id,
         },
       },
     });
@@ -97,8 +97,8 @@ export class AuthService {
     return session.message;
   }
 
-  async findByAddress(walletAddress: string): Promise<User | null> {
-    return await this.prisma.user.findUnique({
+  async findByAddress(walletAddress: string): Promise<Patient | null> {
+    return await this.prisma.patient.findUnique({
       where: {
         walletAddress: walletAddress,
       },
@@ -106,15 +106,15 @@ export class AuthService {
   }
 
   async createSession(
-    data: Prisma.UserSessionCreateInput,
-  ): Promise<UserSession> {
-    return await this.prisma.userSession.create({
+    data: Prisma.PatientSessionCreateInput,
+  ): Promise<PatientSession> {
+    return await this.prisma.patientSession.create({
       data,
     });
   }
 
   private async handleUsedSession(sessionId: number) {
-    await this.prisma.userSession.update({
+    await this.prisma.patientSession.update({
       where: {
         id: sessionId,
       },
@@ -124,12 +124,12 @@ export class AuthService {
     });
   }
 
-  private async handleUnauthorized(user: User) {
+  private async handleUnauthorized(user: Patient) {
     if (!user.lockEnabled) {
       return;
     }
     const failedAttempts = user.loginAttempts + 1;
-    await this.prisma.user.update({
+    await this.prisma.patient.update({
       where: { id: user.id },
       data: {
         loginAttempts: failedAttempts,
@@ -142,7 +142,7 @@ export class AuthService {
 
   private async handleRefreshToken(userId: number, refreshToken: string) {
     const hash = await this.utils.argon2Hash(refreshToken);
-    await this.prisma.user.update({
+    await this.prisma.patient.update({
       where: {
         id: userId,
       },
@@ -152,10 +152,12 @@ export class AuthService {
     });
   }
 
-  private async generateJwtTokens(user: User): Promise<AuthResponse> {
+  private async generateJwtTokens(user: Patient): Promise<AuthResponse> {
     const payload: JwtPayload = {
       walletAddress: user.walletAddress,
-      name: user.name,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
     };
     const jwtConfig = this.configService.get<JwtConfig>('jwt');
     const [access_token, refresh_token] = await Promise.all([

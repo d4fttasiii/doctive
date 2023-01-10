@@ -5,6 +5,7 @@ import { ProfileRoutingModule } from './profile-routing.module';
 import { DetailsComponent } from './details/details.component';
 import { EditComponent } from './edit/edit.component';
 import { SharedModule } from '@shared/shared.module';
+import { CoreModule } from '@core/core.module';
 
 
 @NgModule({
@@ -14,6 +15,7 @@ import { SharedModule } from '@shared/shared.module';
   ],
   imports: [
     CommonModule,
+    CoreModule,
     SharedModule,
     ProfileRoutingModule
   ]

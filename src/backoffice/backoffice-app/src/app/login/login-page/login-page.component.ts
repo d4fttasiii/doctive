@@ -16,12 +16,12 @@ export class LoginPageComponent implements OnInit {
     private authService: AuthService,
     private web3: Web3Service,
     private router: Router,
-  ) {}
+  ) { }
 
   async ngOnInit() {
     const isLoggedIn = await this.authService.isLoggedIn();
     if (isLoggedIn) {
-      this.router.navigate(['profile']);
+      this.goToProfile();
     }
     this.isLoading = false;
   }
@@ -34,9 +34,14 @@ export class LoginPageComponent implements OnInit {
       const { message } = await this.authService.getLoginMessage(accounts[0]);
       const signature = await this.web3.signMessage(message);
       await this.authService.login(accounts[0], signature);
+      this.goToProfile();
     } finally {
       this.isLoading = false;
       this.isSubmitting = false;
     }
+  }
+
+  private goToProfile() {
+    this.router.navigate(['profile']);
   }
 }

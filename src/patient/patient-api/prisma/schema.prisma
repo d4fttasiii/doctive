@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = "sqlserver://localhost:1433;database=doctive_patient;user=sa;password=D0ct1v3_1337;encrypt=false;trustServerCertificate=true"
+}
+
+model Patient {
+  id                   Int                 @id @default(autoincrement())
+  patientHomeAddressId Int?
+  walletAddress        String              @unique
+  firstname            String
+  lastname             String
+  email                String              @unique
+  createdAt            DateTime            @default(now())
+  modifiedAt           DateTime?
+  lockEnabled          Boolean             @default(false)
+  loginAttempts        Int?
+  lockedUntil          DateTime?
+  refreshToken         String?
+  sessions             PatientSession[]
+  homeAddress          PatientHomeAddress? @relation(fields: [patientHomeAddressId], references: [id])
+}
+
+model PatientSession {
+  id        Int      @id @default(autoincrement())
+  message   String
+  used      Boolean  @default(false)
+  Patient   Patient? @relation(fields: [patientId], references: [id])
+  patientId Int
+  createdAt DateTime @default(now())
+}
+
+model PatientHomeAddress {
+  id        Int       @id @default(autoincrement())
+  countryId Int
+  city      String
+  zip       String
+  street    String
+  streetNr  String
+  Country   Country?  @relation(fields: [countryId], references: [id])
+  Patient   Patient[]
+}
+
+model Country {
+  id                 Int                  @id @default(autoincrement())
+  iso2               String               @db.NVarChar(2)
+  iso3               String               @db.NVarChar(3)
+  deName             String
+  enName             String
+  PatientHomeAddress PatientHomeAddress[]
+}

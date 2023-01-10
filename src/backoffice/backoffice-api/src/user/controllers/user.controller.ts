@@ -21,7 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { FastifyRequest } from 'fastify';
 import { FastifyReply } from 'fastify';
-import { AuthResponse } from '../models/auth-response';
+import { AuthResponse } from '../../auth/models/auth-response';
 
 import { LoginDto } from '../models/login-dto';
 import { LoginMessage } from '../models/login-message';

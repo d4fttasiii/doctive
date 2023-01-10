@@ -1,1 +1,5 @@
-<p>details works!</p>
+<app-container title="My Profile" icon="fa-user" [isLoading]="isLoading" [isSubmitting]="isSubmitting">
+    <div class="mt-5 w-full">
+       <pre>{{ myUser | json }}</pre>
+    </div>
+</app-container>

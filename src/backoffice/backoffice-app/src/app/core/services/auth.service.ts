@@ -62,7 +62,6 @@ export class AuthService {
     }
 
     if (session.exp <= moment().unix()) {
-      this.caching.remove(BACKOFFICE_USER_SESSION);
       return null;
     }
     else {

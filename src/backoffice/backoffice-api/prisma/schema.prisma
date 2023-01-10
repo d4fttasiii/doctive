@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "sqlserver"
-  url      = "sqlserver://localhost:1433;database=backoffice;user=sa;password=D0ct1v3_1337;encrypt=false;trustServerCertificate=true"
+  url      = "sqlserver://localhost:1433;database=doctive_backoffice;user=sa;password=D0ct1v3_1337;encrypt=false;trustServerCertificate=true"
 }
 
 model User {

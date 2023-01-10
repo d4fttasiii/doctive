@@ -1,3 +1,5 @@
+import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
+
 export interface Config {
     app: AppConfig;
     web3: Web3Config;
@@ -14,7 +16,7 @@ export interface AppConfig {
     host: string;
     port: number;
     apiKey?: string;
-    cookieSecret?: string;
+    cors?: CorsOptions;
 }
 
 export interface Web3Config {

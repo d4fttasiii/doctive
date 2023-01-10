@@ -5,7 +5,11 @@ export const DoctiveConfig = (): Config => ({
     host: process.env.DOCTIVE_APP_HOST || 'localhost',
     port: process.env.DOCTIVE_APP_PORT ? parseInt(process.env.DOCTIVE_APP_PORT, 10) : 3000,
     apiKey: process.env.DOCTIVE_API_KEY || 'k333y',
-    cookieSecret: process.env.DOCTIVE_COOKIE_SECRET || 'k333y',
+    cors: {
+      origin: process.env.DOCTIVE_APP_CORS_ORIGIN || 'http://localhost:4200',
+      methods: process.env.DOCTIVE_APP_CORS_METHODS || 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      credentials: process.env.DOCTIVE_APP_CORS_CREDENTIALS == 'true',
+    }
   },
   web3: {
     url: process.env.DOCTIVE_WEB3_URL || 'http://localhost:8545',
