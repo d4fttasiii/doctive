@@ -3110,7 +3110,7 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-"doctive-core@file:../../core":
+"doctive-core@file:../doctive-core":
   version "0.0.1"
   dependencies:
     "@azure/identity" "^3.1.2"

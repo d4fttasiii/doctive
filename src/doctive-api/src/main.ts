@@ -31,8 +31,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(
     app,
     new DocumentBuilder()
-      .setTitle('Doctive Patient API')
-      .setDescription('The Doctive Patient API description')
+      .setTitle('Doctive API')
+      .setDescription('The Doctive API description')
       .setVersion('1.0')
       .build(),
   );
